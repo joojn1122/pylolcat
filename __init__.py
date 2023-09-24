@@ -9,7 +9,7 @@ __stdout__ = sys.stdout
 class Lolcat:
     def __init__(
             self, 
-            step: int = 6,
+            step: int = 3,
             file: any = None,
             seed: int = 0,
             prefix: str = ''
@@ -24,15 +24,13 @@ class Lolcat:
         self.current = seed % 360 / 360
         self.step = step
         self.prefix = prefix
-        
-        self.console = Console(file=file)
+        self.file = file
 
-    def get_color(self, next_: bool) -> Style:
-        if next_:
-            self.current += (1 / 360) * self.step
+    def get_color(self) -> Style:
+        self.current += (1 / 360) * self.step
             
-            if self.current >= 1:
-                self.current = 0
+        if self.current >= 1:
+            self.current = 0
 
         color = Color.from_rgb(
             *[
@@ -54,12 +52,34 @@ class Lolcat:
         self.current = self.step * self.line
         self.line += 1
 
-    def print(self, *values, end='\n', sep=' ', file=None):
+    def render(self, text: str) -> str:
+        '''
+        Renders text with colors
+        '''
+
+        out_text = ""
+        for char in text:
+            color = self.get_color()
+
+            if char == '\n':
+                self.current = self.step * self.line
+                self.line += 1
+
+                out_text += char
+                continue
+            
+            rendered_char = color.render(char)
+            out_text += rendered_char
+
+        return out_text
+
+    def print(self, *values, end='\n', sep=' ', file=None, flush=False):
         '''
         Prints the values to a stream, or to sys.stdout by default. Optional keyword arguments:
         file: a file-like object (stream); defaults to the current sys.stdout.
         sep: string inserted between values, default a space.
         end: string appended after the last value, default a newline.
+        flush: whether to forcibly flush the stream.
         '''
         
         text = sep.join([str(value) for value in values]) + end
@@ -68,24 +88,12 @@ class Lolcat:
             self.write(text)
             return
 
-        console = self.console if file is None else Console(file=file)
+        out = file or self.file or __stdout__
 
         if self.prefix != '':
-            console.print(self.prefix, end='')
+            Console(file=out).print(self.prefix, end='')
 
-        for char in text:
-            color = self.get_color(
-                next_=char not in ('\t', ' ', '\n')
-            )
-
-            if char == '\n':
-                self.current = self.step * self.line
-                self.line += 1
-
-                console.print('\n', end='')
-                continue
-        
-            console.print(char, end='', style=color)
+        print(self.render(text), end='', file=out, flush=flush)
 
     def write(self, text: str) -> None:
         '''
@@ -98,10 +106,10 @@ class Lolcat:
 
     def flush(self) -> None:
         '''
-        rich already auto flushes
+        Flushes the stream.
         '''
 
-        pass
+        (self.file or __stdout__).flush()
 
 def install() -> Lolcat:
     '''
