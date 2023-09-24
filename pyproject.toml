@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling", "rich", "argparse"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pylolcat"
+version = "0.0.1"
+authors = [
+  { name="joojn" }
+]
+description = "Lolcat in python, makes rainbow text :O"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/joojn1122/pylolcat"
+"Bug Tracker" = "https://github.com/joojn1122/pylolcat/issues"
